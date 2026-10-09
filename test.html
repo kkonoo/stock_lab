@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>엔진 테스트</title>
+<meta name="color-scheme" content="light dark">
+<style>
+  :root { --bg: #F5F4F0; --surface: #FFFFFF; --line: #E8E6E0; --text: #1E1F22; --muted: #8A8882; --pass: #2F8A4E; --fail: #D93B3B; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121214; --surface: #1B1B1E; --line: #2C2C31; --text: #ECECEE; --muted: #8E8E95; --pass: #6CCB8A; --fail: #FF6B6F; }
+  }
+  body { margin: 0 auto; max-width: 820px; padding: 24px 16px; background: var(--bg); color: var(--text);
+         font: 14px/1.5 "Pretendard Variable", Pretendard, -apple-system, "Malgun Gothic", system-ui, sans-serif; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  .muted { color: var(--muted); }
+  #summary { margin: 16px 0; padding: 12px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); font-weight: 700; }
+  #summary.pass { color: var(--pass); } #summary.fail { color: var(--fail); }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li { padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  li .err { margin-top: 4px; color: var(--fail); font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>🧪 백테스트 엔진 테스트</h1>
+<div class="muted">합성 데이터로 js/engine.js를 시험해요. 화면 없이 엔진만 따로 돌려요.</div>
+<div id="summary">돌리는 중…</div>
+<ol id="list"></ol>
+
+<script src="js/engine.js"></script>
+<script src="js/engine.test.js"></script>
+<script>
+'use strict';
+const list = document.getElementById('list'), summary = document.getElementById('summary');
+let passed = 0;
+for (const t of TESTS) {
+  const li = document.createElement('li');
+  try {
+    t.fn();
+    passed++;
+    li.textContent = `✅ ${t.name}`;
+  } catch (e) {
+    li.textContent = `❌ ${t.name}`;
+    const err = document.createElement('div');
+    err.className = 'err';
+    err.textContent = e.message;
+    li.append(err);
+  }
+  list.append(li);
+}
+const failed = TESTS.length - passed;
+summary.textContent = failed ? `❌ ${TESTS.length}개 중 ${failed}개 실패` : `✅ ${TESTS.length}개 모두 통과`;
+summary.className = failed ? 'fail' : 'pass';
+document.title = `${failed ? '❌' : '✅'} 엔진 테스트 ${passed}/${TESTS.length}`;
+window.testResult = { passed, failed };
+</script>
+</body>
+</html>
