@@ -1,0 +1,23 @@
+{
+  "kr": {
+    "benchmark": { "ticker": "069500", "name": "KODEX 200" },
+    "stocks": [
+      { "ticker": "005930", "name": "삼성전자" },
+      { "ticker": "000660", "name": "SK하이닉스" },
+      { "ticker": "035420", "name": "NAVER" },
+      { "ticker": "005380", "name": "현대차" },
+      { "ticker": "247540", "name": "에코프로비엠" }
+    ]
+  },
+  "us": {
+    "benchmark": { "ticker": "SPY", "name": "SPDR S&P 500" },
+    "stocks": [
+      { "ticker": "AAPL", "name": "Apple" },
+      { "ticker": "MSFT", "name": "Microsoft" },
+      { "ticker": "NVDA", "name": "NVIDIA" },
+      { "ticker": "AMZN", "name": "Amazon" },
+      { "ticker": "GOOGL", "name": "Alphabet" },
+      { "ticker": "QQQ", "name": "Invesco QQQ (나스닥100)" }
+    ]
+  }
+}

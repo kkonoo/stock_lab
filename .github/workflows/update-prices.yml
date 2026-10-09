@@ -1,0 +1,64 @@
+name: 시세 업데이트
+
+on:
+  schedule:
+    - cron: '30 7 * * 1-5'   # 국내: UTC 월~금 07:30 = KST 16:30 (장 마감 후)
+    - cron: '7 22 * * 1-5'   # 미국: UTC 월~금 22:07 = KST 화~토 07:07 (뉴욕 장 마감 1~2시간 뒤)
+  workflow_dispatch:
+    inputs:
+      market:
+        description: '받을 시장'
+        type: choice
+        options: [all, kr, us]
+        default: all
+
+permissions:
+  contents: write
+
+concurrency:  # 국내·미국 실행이 겹쳐도 meta.json을 동시에 고치지 않게 차례로
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - run: pip install -r scripts/requirements.txt
+
+      - name: 시장 정하기
+        id: m
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then m="${{ inputs.market }}"
+          elif [ "${{ github.event.schedule }}" = "30 7 * * 1-5" ]; then m=kr
+          else m=us; fi
+          echo "market=$m" >> "$GITHUB_OUTPUT"
+
+      - name: 시세 받기
+        id: fetch
+        continue-on-error: true  # 한 시장이 통째로 실패해도 받은 건 커밋하고, 마지막 단계에서 실패로 표시
+        run: python -u scripts/update_prices.py --market ${{ steps.m.outputs.market }}
+
+      - name: 바뀐 게 있을 때만 커밋
+        run: |
+          git add data
+          if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "data(${{ steps.m.outputs.market }}): 시세 업데이트 $(TZ=Asia/Seoul date +%F)"
+          git pull --rebase
+          git push
+
+      - name: 실패 알림
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          echo "::error::'시세 받기' 단계가 실패했어요. 그 단계 로그와 실행 요약의 실패 목록을 확인해 주세요."
+          exit 1
