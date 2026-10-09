@@ -219,3 +219,4 @@ async function init() {
   render();
 }
 document.addEventListener('DOMContentLoaded', init);
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js');

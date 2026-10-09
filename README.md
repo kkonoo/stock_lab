@@ -9,7 +9,26 @@
   몇 분 뒤 `https://kkonoo.github.io/stock_lab/`에서 열려요.
 - **내 컴퓨터**: `index.html`을 더블클릭하면 시세 파일을 못 읽어요(브라우저가 `file://`에서 fetch를 막음). 대신 PowerShell에서
   `powershell -ExecutionPolicy Bypass -File tools/serve.ps1`을 실행하고 http://localhost:8767/ 을 열어요.
-- 전략·설정은 브라우저(localStorage)에만 저장돼요. 다른 기기와는 공유되지 않아요.
+- 폰에서 **홈 화면에 추가**하면 앱처럼 열려요. 한 번 열어 둔 뒤에는 인터넷이 없어도 마지막으로 받은 시세로 열려요.
+- 전략·설정은 이 브라우저(localStorage)에만 저장돼요. 다른 기기로 옮길 때는 📤 내보내기 → 📥 불러오기를 써요.
+
+## 쓰는 법
+
+1. **🇰🇷 국내 / 🇺🇸 미국**을 골라요. 원화와 달러를 섞지 않게 시장마다 따로 돌려요.
+2. **🧪 전략**에서 `＋ 새 전략`을 누르거나 예시 전략의 `✏️ 고치기`를 눌러요.
+   - 🛒 **언제 살까요?** `＋ 조건 추가`로 조건을 더해요. 모두 만족한 날(종가 기준) 다음 날 시가에 사요.
+     조건: 종가 vs 이동평균 · 골든크로스/데드크로스 · RSI · 최근 n일 수익률 · 거래량 급증 · 52주 신고가 근처
+   - 💰 **언제 팔까요?** 익절 +x% · 손절 −y% · 최대 보유일(비우면 안 씀)
+   - 👛 **돈은 얼마나?** 시작 자본 · 1회 매수(고정 금액 또는 총자산의 %) · 최대 동시 보유 종목 수
+   - 고치면 바로 저장돼요.
+3. **📊 결과**: 지표 카드, 자산 곡선 vs 벤치마크, 거래 목록. 거래를 누르면 그 종목 캔들 차트에 ▲매수 ▼매도가 보여요.
+   위쪽에서 기간(전체·5년·3년·1년·직접)을 바꿀 수 있어요.
+4. **⚖️ 비교**: 전략을 골라 지표를 나란히 보고 누적 수익률을 겹쳐 봐요.
+5. **⚙️ 설정**: 시장별 수수료·세금·슬리피지(%)와 테마. 넣어 둔 비용은 예시값이라 실제 요율로 고쳐 주세요(`js/config.js`의 기본값).
+6. **📁 데이터**: 종목별 데이터 첫날·마지막 날. 다른 종목보다 늦으면 ⚠️ (수집 실패 의심 → Actions 로그 확인).
+7. **📤 내보내기 / 📥 불러오기**: 국내·미국 전략을 JSON 파일 하나로 저장하고, 불러오면 지금 전략에 더해요(덮어쓰지 않음).
+
+> 관심 종목 안에서만 돌리기 때문에 **생존 편향**이 있어요. 지금까지 살아남은 종목을 골랐으니 과거 결과가 실제보다 좋게 나오기 쉬워요.
 
 ## 시세 데이터
 
@@ -106,3 +125,27 @@ GitHub Actions가 매일 관심 종목의 일봉(수정주가)을 받아서 `dat
 pip install -r scripts/requirements.txt
 python scripts/update_prices.py --market kr   # all / kr / us
 ```
+
+## 폴더 구조
+
+```
+index.html · test.html · manifest.webmanifest · sw.js
+css/style.css
+js/engine.js        백테스트 엔진 (화면과 분리, 전역 Engine)
+js/engine.test.js   엔진 테스트 (test.html이 불러옴)
+js/config.js        기본 비용·예시 전략
+js/app.js           저장·탭·데이터 읽기·기간·설정·데이터 탭
+js/builder.js       전략 목록·조건 빌더·내보내기/불러오기
+js/results.js       결과·비교 화면과 차트 (lightweight-charts 5.2.1, CDN 버전 고정)
+data/               watchlist.json ✏️ · meta.json 🤖 · prices/{kr,us}/{티커}.json 🤖
+scripts/            update_prices.py · requirements.txt
+.github/workflows/  update-prices.yml
+icons/              앱 아이콘 (tools/make-icons.py로 다시 그릴 수 있어요)
+tools/serve.ps1     내 컴퓨터에서 열어 보는 서버
+```
+
+## 다음에 할 것 (2차)
+
+- 모의매매: 앞으로의 날짜에 전략을 적용해 가상 거래를 쌓기
+- 오늘의 조건 검색: 관심 종목 중 오늘 종가 기준으로 신호가 난 종목 보기
+- 적립식 시뮬레이터: 매달 같은 금액을 SPY·QQQ 등에 넣었다면?
