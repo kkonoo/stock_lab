@@ -27,8 +27,27 @@
 5. **⚙️ 설정**: 시장별 수수료·세금·슬리피지(%)와 테마. 넣어 둔 비용은 예시값이라 실제 요율로 고쳐 주세요(`js/config.js`의 기본값).
 6. **📁 데이터**: 종목별 데이터 첫날·마지막 날. 다른 종목보다 늦으면 ⚠️ (수집 실패 의심 → Actions 로그 확인).
 7. **📤 내보내기 / 📥 불러오기**: 국내·미국 전략을 JSON 파일 하나로 저장하고, 불러오면 지금 전략에 더해요(덮어쓰지 않음).
+8. **📖 공부**: 주식 기초·차트 지표·스윙매매·결과 읽는 법·장기투자·가치투자 용어집이에요. 화면 곳곳의 **ⓘ**를 누르면 그 용어 설명으로 바로 가요.
 
 > 관심 종목 안에서만 돌리기 때문에 **생존 편향**이 있어요. 지금까지 살아남은 종목을 골랐으니 과거 결과가 실제보다 좋게 나오기 쉬워요.
+
+## 용어 추가하는 법
+
+`data/glossary.json`을 GitHub에서 열고 ✏️ Edit → `terms` 목록에 하나를 더해요(앞 항목 끝에 쉼표).
+
+```json
+{
+  "id": "vix", "cat": "long", "term": "VIX (공포지수)", "aka": "변동성지수",
+  "short": "한 줄 설명",
+  "body": ["문단 1", "문단 2"],
+  "example": "예시 (없어도 돼요)",
+  "see": ["sp500", "mdd"]
+}
+```
+
+- `id`: 영어 소문자·숫자·하이픈, 겹치지 않게 · `cat`: `basic` `chart` `swing` `result` `long` `value` 중 하나
+- `aka`: 검색에 걸릴 다른 이름(띄어쓰기로 여러 개) · `see`: 함께 볼 용어의 `id`
+- 글자만 써요(HTML·마크다운은 그대로 글자로 보여요). 저장하면 Pages가 다시 배포된 뒤 앱에 보여요.
 
 ## 시세 데이터
 
@@ -135,9 +154,10 @@ js/engine.js        백테스트 엔진 (화면과 분리, 전역 Engine)
 js/engine.test.js   엔진 테스트 (test.html이 불러옴)
 js/config.js        기본 비용·예시 전략
 js/app.js           저장·탭·데이터 읽기·기간·설정·데이터 탭
+js/learn.js         📖 공부 탭(용어집)과 ⓘ 버튼
 js/builder.js       전략 목록·조건 빌더·내보내기/불러오기
 js/results.js       결과·비교 화면과 차트 (lightweight-charts 5.2.1, CDN 버전 고정)
-data/               watchlist.json ✏️ · meta.json 🤖 · prices/{kr,us}/{티커}.json 🤖
+data/               watchlist.json ✏️ · glossary.json ✏️ · meta.json 🤖 · prices/{kr,us}/{티커}.json 🤖
 scripts/            update_prices.py · requirements.txt
 .github/workflows/  update-prices.yml
 icons/              앱 아이콘 (tools/make-icons.py로 다시 그릴 수 있어요)

@@ -118,13 +118,19 @@ function candleChart(card, m, stock, trades, focus) {
 // ---------- 공통 조각 ----------
 function notes(m, missing) {
   return h('div', 'notes',
-    h('p', 'note', 'ℹ️ 관심 종목 안에서만 돌려서 생존 편향이 있어요. 지금까지 살아남은 종목을 골랐기 때문에 실제보다 결과가 좋게 나올 수 있어요.'),
-    m === 'kr' ? h('p', 'note', 'ℹ️ 국내 시세는 배당이 빠진 가격 기준이에요 (전략·벤치마크 모두).') : null,
+    h('p', 'note', 'ℹ️ 관심 종목 안에서만 돌려서 생존 편향이 있어요. 지금까지 살아남은 종목을 골랐기 때문에 실제보다 결과가 좋게 나올 수 있어요. ', infoBtn('survivorship-bias')),
+    m === 'kr' ? h('p', 'note', 'ℹ️ 국내 시세는 배당이 빠진 가격 기준이에요 (전략·벤치마크 모두). ', infoBtn('adjusted-price')) : null,
     missing.length ? h('p', 'note warn', `⚠️ 시세 파일이 없는 종목은 빼고 계산했어요: ${missing.join(', ')}`) : null,
   );
 }
+// 지표 이름 → 📖 용어집 id (지표 카드·비교 표의 ⓘ)
+const METRIC_TERMS = {
+  '총수익률': 'total-return', 'CAGR (연평균)': 'cagr', 'MDD (최대 낙폭)': 'mdd', '승률': 'win-rate',
+  '평균 수익 / 손실': 'payoff-ratio', '평균 수익': 'payoff-ratio', '평균 손실': 'payoff-ratio', '평균 보유일': 'holding-period',
+};
+const metricInfo = label => (METRIC_TERMS[label] ? infoBtn(METRIC_TERMS[label]) : null);
 function tile(label, value, sub, cls = '') {
-  return h('div', 'tile', h('div', 'tile-label', label), h('div', `tile-value ${cls}`, value), sub ? h('div', 'tile-sub', sub) : null);
+  return h('div', 'tile', h('div', 'tile-label', label, metricInfo(label)), h('div', `tile-value ${cls}`, value), sub ? h('div', 'tile-sub', sub) : null);
 }
 const pctCell = v => h('span', tone(v), fmtPct(v));
 
@@ -171,7 +177,7 @@ async function renderResults() {
   );
 
   // 자산 곡선 vs 벤치마크
-  const eqCard = h('section', 'card chart-card', h('h3', '', '📈 자산 곡선'));
+  const eqCard = h('section', 'card chart-card', h('h3', '', '📈 자산 곡선', infoBtn('equity-curve'), h('span', 'muted small', ' · 벤치마크(사서 보유)와 비교'), infoBtn('benchmark')));
   body.append(eqCard);
   const lines = [{ name: s.name, short: '전략', color: cssVar(`--s${slotOf(s)}`), data: res.dates.map((time, i) => ({ time, value: res.equity[i] })) }];
   if (res.bench) lines.push({ name: `${bname} (사서 보유)`, short: bname, color: BENCH_COLOR(), data: res.dates.map((time, i) => ({ time, value: res.bench[i] })) });
@@ -208,7 +214,7 @@ async function renderResults() {
   function drawStock() {
     if (stockChart) { stockChart.remove(); liveCharts = liveCharts.filter(c => c !== stockChart); }
     const st = stocks.find(x => x.ticker === selTrade.ticker);
-    chartCard.replaceChildren(h('h3', '', `🕯️ ${st.name} `, h('span', 'muted', st.ticker)),
+    chartCard.replaceChildren(h('h3', '', `🕯️ ${st.name} `, h('span', 'muted', st.ticker), infoBtn('candlestick')),
       h('p', 'muted small', '▲ 매수 · ▼ 매도 — 표에서 다른 거래를 누르면 그 거래로 옮겨요. 빨강 = 오른 날, 파랑 = 내린 날.'));
     candleChart(chartCard, m, st, res.trades.filter(t => t.ticker === st.ticker), selTrade);
     stockChart = liveCharts.at(-1);
@@ -274,7 +280,7 @@ async function renderCompare() {
   ];
   const tbody = h('tbody');
   for (const [label, cell, bcell] of ROWS) {
-    tbody.append(h('tr', '', h('td', '', label), ...cols.map(c => h('td', 'num', cell(c.r))),
+    tbody.append(h('tr', '', h('td', '', label, metricInfo(label)), ...cols.map(c => h('td', 'num', cell(c.r))),
       first.res.bench ? h('td', 'num', bcell ? bcell(first.res.benchMetrics) : '–') : null));
   }
   table.append(tbody);

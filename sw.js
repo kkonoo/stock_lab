@@ -4,7 +4,7 @@
 const CACHE = 'stocklab-v1';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/style.css',
-  'js/engine.js', 'js/config.js', 'js/app.js', 'js/builder.js', 'js/results.js',
+  'js/engine.js', 'js/config.js', 'js/app.js', 'js/learn.js', 'js/builder.js', 'js/results.js', 'data/glossary.json',
   'icons/app-192.png', 'icons/app-512.png', 'icons/app-maskable-192.png', 'icons/app-maskable-512.png',
 ];
 // 차트 라이브러리: 버전이 고정이라 안 바뀜 → 저장해 둔 것 먼저

@@ -124,6 +124,7 @@ const VIEWS = {
   results: () => renderResults(),
   compare: () => renderCompare(),
   data: () => renderData(),
+  learn: () => renderLearn(),
 };
 function render() {
   const tab = VIEWS[prefs.tab] ? prefs.tab : 'results', m = curMarket();
@@ -170,7 +171,7 @@ function renderSettings() {
         db.costs[m] = { ...costsFor(m), [key]: v };
         saveDb();
       });
-      fs.append(h('label', 'field', h('span', '', name), h('span', 'unit-input', input, h('span', 'unit', '%'))));
+      fs.append(h('label', 'field', h('span', '', name, infoBtn(key === 'slippage' ? 'slippage' : 'commission-tax')), h('span', 'unit-input', input, h('span', 'unit', '%'))));
     }
     fs.append(button('기본값으로', () => { delete db.costs[m]; saveDb(); renderSettings(); }, 'btn small ghost'));
     box.append(fs);
@@ -202,7 +203,7 @@ function renderData() {
     h('h2', '', '📁 데이터'),
     h('p', 'muted', '매일 장 마감 후 GitHub Actions가 수정주가 일봉을 받아요. 관심 종목은 GitHub의 data/watchlist.json에서 고쳐요.'),
     h('div', 'table-wrap card', table),
-    m === 'kr' ? h('p', 'note', 'ℹ️ 국내 수정주가는 분할·병합·증자만 반영하고 배당은 빠져 있어요.') : null,
+    m === 'kr' ? h('p', 'note', 'ℹ️ 국내 수정주가는 분할·병합·증자만 반영하고 배당은 빠져 있어요. ', infoBtn('adjusted-price')) : null,
   );
 }
 
@@ -211,7 +212,11 @@ async function init() {
   applyTheme();
   render();
   try {
-    [watch, meta] = await Promise.all([getJSON('data/watchlist.json'), getJSON('data/meta.json').catch(() => ({}))]);
+    [watch, meta, glossary] = await Promise.all([
+      getJSON('data/watchlist.json'),
+      getJSON('data/meta.json').catch(() => ({})),
+      getJSON('data/glossary.json').catch(() => null), // 없어도 앱은 돌아감 (📖 탭에 안내)
+    ]);
   } catch (e) {
     $('main').replaceChildren(h('p', 'note warn', `⚠️ 관심 종목 목록을 못 읽었어요 (${e.message}). 인터넷 연결을 확인하고 새로고침해 주세요.`));
     return;

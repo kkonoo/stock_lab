@@ -8,33 +8,33 @@ const sel = (key, options) => ({ key, kind: 'sel', options });
 const UP_DOWN = [['gte', '이상'], ['lte', '이하']];
 const CONDS = {
   priceVsMa: {
-    label: '종가 vs 이동평균', init: { n: 20, op: 'above' },
+    label: '종가 vs 이동평균', term: 'moving-average', init: { n: 20, op: 'above' },
     form: ['종가가', num('n', 1, 250, '일'), '이동평균', sel('op', [['above', '위'], ['below', '아래']])],
     text: c => `종가가 ${c.n}일 이동평균 ${c.op === 'below' ? '아래' : '위'}`,
   },
   maCross: {
-    label: '골든크로스 / 데드크로스', init: { short: 5, long: 20, dir: 'golden' },
+    label: '골든크로스 / 데드크로스', term: 'golden-cross', init: { short: 5, long: 20, dir: 'golden' },
     form: [num('short', 1, 250, '일선이'), num('long', 2, 250, '일선을'), sel('dir', [['golden', '뚫고 올라감 (골든크로스)'], ['dead', '뚫고 내려감 (데드크로스)']])],
     text: c => `${c.short}일선이 ${c.long}일선을 ${c.dir === 'dead' ? '뚫고 내려감 (데드크로스)' : '뚫고 올라감 (골든크로스)'}`,
     check: c => (c.short >= c.long ? '단기(앞) 이동평균 기간이 장기(뒤)보다 짧아야 해요.' : ''),
   },
   rsi: {
-    label: 'RSI', init: { n: 14, op: 'lte', value: 30 },
+    label: 'RSI', term: 'rsi', init: { n: 14, op: 'lte', value: 30 },
     form: ['RSI', num('n', 2, 100, '일'), '값이', num('value', 0, 100), sel('op', UP_DOWN)],
     text: c => `RSI(${c.n})가 ${c.value} ${c.op === 'lte' ? '이하' : '이상'}`,
   },
   return: {
-    label: '최근 n일 수익률', init: { n: 5, op: 'lte', value: -10 },
+    label: '최근 n일 수익률', term: 'momentum', init: { n: 5, op: 'lte', value: -10 },
     form: ['최근', num('n', 1, 250, '일'), '수익률이', num('value', -100, 1000, '%', 0.1), sel('op', UP_DOWN)],
     text: c => `최근 ${c.n}일 수익률이 ${fmtPct(c.value, 0)} ${c.op === 'lte' ? '이하' : '이상'}`,
   },
   volume: {
-    label: '거래량 급증', init: { n: 20, k: 2 },
+    label: '거래량 급증', term: 'volume-spike', init: { n: 20, k: 2 },
     form: ['거래량이 직전', num('n', 1, 250, '일'), '평균의', num('k', 0.1, 100, '배', 0.1), '이상'],
     text: c => `거래량이 직전 ${c.n}일 평균의 ${c.k}배 이상`,
   },
   nearHigh: {
-    label: '52주 신고가 근처', init: { pct: 5 },
+    label: '52주 신고가 근처', term: '52w-high', init: { pct: 5 },
     form: ['종가가 52주 신고가 대비', num('pct', 0, 100, '%', 0.1), '이내'],
     text: c => `종가가 52주 신고가 대비 ${c.pct}% 이내`,
   },
@@ -198,7 +198,7 @@ function conditionRow(s, c, redraw) {
   const del = button('✕', () => { s.entry.splice(s.entry.indexOf(c), 1); saveDb(); redraw(); }, 'icon-btn small');
   del.title = '이 조건 빼기';
   del.setAttribute('aria-label', '이 조건 빼기');
-  return h('div', 'cond-row', h('span', 'cond-type', def.label), sentence, del, warn);
+  return h('div', 'cond-row', h('span', 'cond-type', def.label, infoBtn(def.term)), sentence, del, warn);
 }
 
 function renderEditor(s) {
@@ -228,9 +228,9 @@ function renderEditor(s) {
   // 매도 규칙
   const ex = s.exit;
   const exitBox = h('div', 'form-grid',
-    h('label', 'field', h('span', '', '🎯 익절 (이만큼 오르면 팔기)'), h('span', 'with-unit', h('span', '', '+'), numInput(() => ex.takeProfit, v => { ex.takeProfit = v; }, { min: 0.1, max: 1000, step: 0.1, optional: true }), h('span', '', '%'))),
-    h('label', 'field', h('span', '', '🛑 손절 (이만큼 내리면 팔기)'), h('span', 'with-unit', h('span', '', '−'), numInput(() => ex.stopLoss, v => { ex.stopLoss = v; }, { min: 0.1, max: 99, step: 0.1, optional: true }), h('span', '', '%'))),
-    h('label', 'field', h('span', '', '⏰ 최대 보유일 (지나면 그날 종가에 팔기)'), h('span', 'with-unit', numInput(() => ex.maxHoldDays, v => { ex.maxHoldDays = v; }, { min: 1, max: 1000, int: true, optional: true }), h('span', '', '거래일'))),
+    h('label', 'field', h('span', '', '🎯 익절 (이만큼 오르면 팔기)', infoBtn('take-profit')), h('span', 'with-unit', h('span', '', '+'), numInput(() => ex.takeProfit, v => { ex.takeProfit = v; }, { min: 0.1, max: 1000, step: 0.1, optional: true }), h('span', '', '%'))),
+    h('label', 'field', h('span', '', '🛑 손절 (이만큼 내리면 팔기)', infoBtn('stop-loss')), h('span', 'with-unit', h('span', '', '−'), numInput(() => ex.stopLoss, v => { ex.stopLoss = v; }, { min: 0.1, max: 99, step: 0.1, optional: true }), h('span', '', '%'))),
+    h('label', 'field', h('span', '', '⏰ 최대 보유일 (지나면 그날 종가에 팔기)', infoBtn('holding-period')), h('span', 'with-unit', numInput(() => ex.maxHoldDays, v => { ex.maxHoldDays = v; }, { min: 1, max: 1000, int: true, optional: true }), h('span', '', '거래일'))),
   );
   const exitWarn = h('p', 'cond-warn');
   const checkExit = () => { exitWarn.textContent = ex.takeProfit > 0 || ex.stopLoss > 0 || ex.maxHoldDays > 0 ? '' : '파는 규칙이 하나도 없으면 산 종목을 끝까지 들고 있어요.'; };
@@ -260,11 +260,11 @@ function renderEditor(s) {
   }
   const moneyBox = h('div', 'form-grid',
     h('label', 'field', h('span', '', '시작 자본'), h('span', 'with-unit', initial, h('span', '', unit), initHint)),
-    h('div', 'field', h('span', '', '1회 매수 금액'), sizing,
+    h('div', 'field', h('span', '', '1회 매수 금액', infoBtn('position-sizing')), sizing,
       mo.sizing === 'percent'
         ? h('span', 'with-unit', h('span', '', '총자산의'), percent, h('span', '', '%'))
         : h('span', 'with-unit', amount, h('span', '', unit), amtHint)),
-    h('label', 'field', h('span', '', '최대 동시 보유'), h('span', 'with-unit', numInput(() => mo.maxPositions, v => { mo.maxPositions = v; }, { min: 1, max: 50, int: true }), h('span', '', '종목'))),
+    h('label', 'field', h('span', '', '최대 동시 보유', infoBtn('exposure')), h('span', 'with-unit', numInput(() => mo.maxPositions, v => { mo.maxPositions = v; }, { min: 1, max: 50, int: true }), h('span', '', '종목'))),
   );
 
   const back = button('‹ 목록', () => { delete prefs.edit; savePrefs(); render(); }, 'btn ghost');
@@ -276,15 +276,15 @@ function renderEditor(s) {
     h('div', 'editor',
       h('div', 'name-row', name, h('span', 'muted small', `${m === 'kr' ? '🇰🇷 국내' : '🇺🇸 미국'} · 고치면 바로 저장돼요`)),
       h('section', 'card',
-        h('h3', '', '🛒 언제 살까요? (모두 만족할 때)'),
+        h('h3', '', '🛒 언제 살까요? (모두 만족할 때)', infoBtn('signal')),
         h('p', 'muted small', '그날 종가 기준으로 조건을 모두 만족하면, 다음 날 시가에 사요.'),
         conds, add),
       h('section', 'card',
-        h('h3', '', '💰 언제 팔까요?'),
+        h('h3', '', '💰 언제 팔까요?', infoBtn('swing-trading')),
         h('p', 'muted small', '먼저 닿는 규칙으로 팔아요. 칸을 비우면 그 규칙은 안 써요. 같은 날 익절가·손절가에 둘 다 닿으면 손절로 쳐요.'),
         exitBox, exitWarn),
       h('section', 'card',
-        h('h3', '', '👛 돈은 얼마나?'),
+        h('h3', '', '👛 돈은 얼마나?', infoBtn('position-sizing')),
         h('p', 'muted small', '같은 종목은 한 번만 사요. 자리가 다 찼거나 현금이 모자라면 그 신호는 건너뛰어요.'),
         moneyBox),
     ),
