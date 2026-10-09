@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>주식 연습장</title>
+<meta name="description" content="조건식 매수·익절/손절 매도 전략을 과거 시세로 돌려 보는 공부용 백테스트 앱 (학습용, 투자 권유 아님)">
+<meta name="theme-color" id="themeColor" content="#F5F4F0">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-tab="results">
+
+<header class="topbar">
+  <h1 class="brand">📈 주식 연습장</h1>
+  <div class="seg" id="marketSeg" role="group" aria-label="시장">
+    <button type="button" data-market="kr">🇰🇷 국내</button>
+    <button type="button" data-market="us">🇺🇸 미국</button>
+  </div>
+  <nav class="seg tabs" id="tabSeg" aria-label="화면">
+    <button type="button" data-tab="strategies">🧪 전략</button>
+    <button type="button" data-tab="results">📊 결과</button>
+    <button type="button" data-tab="compare">⚖️ 비교</button>
+    <button type="button" data-tab="data">📁 데이터</button>
+  </nav>
+  <div class="tools">
+    <button type="button" class="icon-btn" id="themeBtn" title="라이트/다크 전환" aria-label="라이트/다크 전환">◐</button>
+    <button type="button" class="icon-btn" id="settingsBtn" title="설정" aria-label="설정">⚙️</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="view" id="strategiesView" data-view="strategies"></section>
+  <section class="view" id="resultsView" data-view="results"></section>
+  <section class="view" id="compareView" data-view="compare"></section>
+  <section class="view" id="dataView" data-view="data"></section>
+</main>
+
+<footer class="foot">학습용이며 투자 권유가 아니에요 · <span id="asOf"></span></footer>
+
+<dialog id="settings">
+  <form method="dialog">
+    <h2>⚙️ 설정</h2>
+    <p class="muted small">시장별 비용(%)이에요. 넣어 둔 값은 예시라서, 실제 수수료·세금은 증권사와 세법을 확인하고 고쳐 주세요. 고치면 결과가 바로 다시 계산돼요.</p>
+    <div id="costFields"></div>
+    <label class="field theme-field"><span>테마</span>
+      <select id="themeSelect"><option value="">기기 설정 따라가기</option><option value="light">☀️ 라이트</option><option value="dark">🌙 다크</option></select>
+    </label>
+    <div class="dialog-actions"><button class="btn primary">닫기</button></div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/builder.js"></script>
+<script src="js/results.js"></script>
+</body>
+</html>

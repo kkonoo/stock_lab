@@ -3,6 +3,14 @@
 조건식으로 사고 익절·손절 규칙으로 파는 전략을 과거 데이터로 돌려 보는 공부용 웹 앱이에요.
 실제 주문 기능은 없어요. **학습용이며 투자 권유가 아니에요.**
 
+## 앱 열기
+
+- **GitHub Pages**: 저장소 Settings → Pages → Build and deployment에서 Source를 **Deploy from a branch**, Branch를 기본 브랜치와 `/ (root)`로 고르고 Save를 눌러요.
+  몇 분 뒤 `https://kkonoo.github.io/stock_lab/`에서 열려요.
+- **내 컴퓨터**: `index.html`을 더블클릭하면 시세 파일을 못 읽어요(브라우저가 `file://`에서 fetch를 막음). 대신 PowerShell에서
+  `powershell -ExecutionPolicy Bypass -File tools/serve.ps1`을 실행하고 http://localhost:8767/ 을 열어요.
+- 전략·설정은 브라우저(localStorage)에만 저장돼요. 다른 기기와는 공유되지 않아요.
+
 ## 시세 데이터
 
 GitHub Actions가 매일 관심 종목의 일봉(수정주가)을 받아서 `data/`에 저장해요. 앱은 이 파일만 읽어요.
