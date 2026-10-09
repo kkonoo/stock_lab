@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '30 7 * * 1-5'   # 국내: UTC 월~금 07:30 = KST 16:30 (장 마감 후)
     - cron: '7 22 * * 1-5'   # 미국: UTC 월~금 22:07 = KST 화~토 07:07 (뉴욕 장 마감 1~2시간 뒤)
+  push:  # 관심 종목·수집 코드를 고쳐 커밋하면 바로 실행 (새 종목 백필)
+    paths:
+      - data/watchlist.json
+      - scripts/**
+      - .github/workflows/update-prices.yml
   workflow_dispatch:
     inputs:
       market:
@@ -37,9 +42,9 @@ jobs:
       - name: 시장 정하기
         id: m
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then m="${{ inputs.market }}"
-          elif [ "${{ github.event.schedule }}" = "30 7 * * 1-5" ]; then m=kr
-          else m=us; fi
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "${{ github.event.schedule }}" = "30 7 * * 1-5" ]; then m=kr; else m=us; fi
+          else m="${{ inputs.market || 'all' }}"; fi  # 수동 실행은 고른 시장, push는 전부
           echo "market=$m" >> "$GITHUB_OUTPUT"
 
       - name: 시세 받기
