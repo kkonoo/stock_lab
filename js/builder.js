@@ -134,16 +134,20 @@ function renderStrategies() {
 
   const file = Object.assign(h('input'), { type: 'file', accept: '.json,application/json', hidden: true });
   file.addEventListener('change', () => { if (file.files[0]) importStrategies(file.files[0]); file.value = ''; });
-  const cards = list.map(s => h('article', 'card strategy',
-    h('h3', '', s.name),
-    h('dl', '',
-      h('dt', '', '🛒 사요'), h('dd', '', `다음 날 시가에 · ${describeEntry(s)}`),
-      h('dt', '', '💰 팔아요'), h('dd', '', describeExit(s.exit)),
-      h('dt', '', '👛 자금'), h('dd', '', describeMoney(s.money, m))),
-    h('div', 'actions',
-      button('📊 결과 보기', () => { prefs.sel = { ...prefs.sel, [m]: s.id }; setTab('results'); }, 'btn primary'),
-      button('✏️ 고치기', () => openEditor(s))),
-  ));
+  const cards = list.map(s => {
+    const card = h('article', 'card strategy',
+      h('h3', '', s.name),
+      h('dl', '',
+        h('dt', '', '🛒 사요'), h('dd', '', `다음 날 시가에 · ${describeEntry(s)}`),
+        h('dt', '', '💰 팔아요'), h('dd', '', describeExit(s.exit)),
+        h('dt', '', '👛 자금'), h('dd', '', describeMoney(s.money, m))),
+      h('div', 'actions',
+        button('📊 결과 보기', () => { prefs.sel = { ...prefs.sel, [m]: s.id }; setTab('results'); }),
+        button('✏️ 고치기', () => openEditor(s))),
+    );
+    card.style.setProperty('--c', `var(--s${slotOf(s)})`); // 위쪽 띠 = 차트에서 이 전략 선 색
+    return card;
+  });
   $('strategiesView').replaceChildren(
     h('div', 'list-head',
       h('h2', '', `🧪 전략 · ${m === 'kr' ? '국내' : '미국'}`),

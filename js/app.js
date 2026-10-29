@@ -143,11 +143,12 @@ for (const b of $('marketSeg').children) b.addEventListener('click', () => { pre
 function applyTheme() {
   if (prefs.theme) document.documentElement.dataset.theme = prefs.theme;
   else delete document.documentElement.dataset.theme;
-  $('themeColor').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  $('themeColor').content = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim(); // 상단 바 색
+  $('themeBtn').textContent = isDark() ? '☀️' : '🌙'; // 누르면 바뀔 테마
 }
+const isDark = () => (prefs.theme ? prefs.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
 $('themeBtn').addEventListener('click', () => {
-  const dark = prefs.theme ? prefs.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  prefs.theme = dark ? 'light' : 'dark';
+  prefs.theme = isDark() ? 'light' : 'dark';
   savePrefs();
   applyTheme();
   render(); // 차트 색을 새 테마로
@@ -190,7 +191,7 @@ function renderData() {
   const m = curMarket(), view = $('dataView'), last = lastDate(m);
   const rows = [[benchOf(m), '벤치마크'], ...stocksOf(m).map(s => [s, '관심 종목'])].filter(([s]) => s);
   const table = h('table', 'grid-table');
-  table.append(h('thead', '', h('tr', '', ...['구분', '종목', '데이터 시작', '마지막 데이터', '상태'].map(t => h('th', '', t)))));
+  table.append(h('thead', '', h('tr', '', ...['구분', '종목', '데이터 시작', '마지막 데이터', '상태'].map((t, i) => h('th', i === 2 || i === 3 ? 'num' : '', t)))));
   const body = h('tbody');
   for (const [s, kind] of rows) {
     const x = meta[m]?.[s.ticker];
