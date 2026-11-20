@@ -160,7 +160,7 @@ js/results.js       결과·비교 화면과 차트 (lightweight-charts 5.2.1, C
 data/               watchlist.json ✏️ · glossary.json ✏️ · meta.json 🤖 · prices/{kr,us}/{티커}.json 🤖
 scripts/            update_prices.py · requirements.txt
 .github/workflows/  update-prices.yml
-icons/              앱 아이콘 (tools/make-icons.py로 다시 그릴 수 있어요)
+icons/              앱 아이콘 (icons/icon.svg에서 tools/make-icons.py로 다시 그릴 수 있어요)
 tools/serve.ps1     내 컴퓨터에서 열어 보는 서버
 ```
 

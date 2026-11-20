@@ -1,45 +1,40 @@
-# 앱 아이콘(icons/app-*.png) 그리기: 남색 타일 위에 오르는 캔들 3개(빨강 = 오름, 파랑 = 내림)
-# maskable = 안드로이드·아이폰용, 배경을 꽉 채우고 그림은 가운데 안전 영역 안에
-# 실행: pip install pillow && python tools/make-icons.py
+"""앱 아이콘(icons/*.png)을 icons/icon.svg에서 그려요.
+
+    python3 tools/make-icons.py      (Playwright 필요: pip install playwright && playwright install chromium)
+
+icon.svg = 둥근 타일(512 기준 모서리 114) 위에 흰 심볼 하나. 심볼은 가운데 288px 안에 두고,
+디테일은 타일 색으로 파내요. 그림을 바꾸려면 icon.svg만 고치고 다시 돌려요.
+- app-*.png          둥근 사각형 (PC·안드로이드)
+- app-maskable-*.png 꽉 찬 사각형 (기기가 알아서 동그랗게·둥글게 자름)
+- apple-touch-icon   꽉 찬 사각형, 투명 없음 (아이폰). icons/apple-touch-icon.png가 있는 앱만
+"""
+import asyncio
+import re
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from playwright.async_api import async_playwright
 
-OUT = Path(__file__).resolve().parent.parent / "icons"
-TILE, RED, BLUE, LINE = "#1F2433", "#F05A5A", "#4C8DF6", "#F5F4F0"
-S = 4  # 크게 그린 뒤 줄여서 가장자리를 부드럽게
+ICONS = Path(__file__).resolve().parent.parent / 'icons'
+SVG = (ICONS / 'icon.svg').read_text(encoding='utf-8')
+SQUARE = re.sub(r'rx="\d+"', 'rx="0"', SVG, count=1)  # 맨 앞 타일만 모서리 없이 (심볼 안 둥근 모서리는 그대로)
 
-
-def draw(size, maskable):
-    big = size * S
-    im = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    u = big / 512  # 512 기준 좌표 → 실제 크기
-    if maskable:
-        d.rectangle([0, 0, big, big], fill=TILE)
-        k, off = 0.78, 512 * 0.11  # 그림을 가운데로 줄임 (안전 영역)
-    else:
-        d.rounded_rectangle([40 * u, 40 * u, 472 * u, 472 * u], radius=104 * u, fill=TILE)
-        k, off = 1.0, 0
-
-    def p(x, y):
-        return ((x * k + off) * u, (y * k + off) * u)
-
-    # 캔들: (가운데 x, 꼬리 위, 몸통 위, 몸통 아래, 꼬리 아래, 색)
-    for cx, wt, bt, bb, wb, color in [
-        (166, 236, 262, 342, 366, BLUE),
-        (256, 168, 196, 300, 322, RED),
-        (346, 104, 128, 236, 258, RED),
-    ]:
-        d.rounded_rectangle([*p(cx - 6, wt), *p(cx + 6, wb)], radius=6 * u * k, fill=color)
-        d.rounded_rectangle([*p(cx - 34, bt), *p(cx + 34, bb)], radius=12 * u * k, fill=color)
-    # 바닥선
-    d.rounded_rectangle([*p(116, 396), *p(396, 410)], radius=7 * u * k, fill=LINE)
-    return im.resize((size, size), Image.LANCZOS)
+JOBS = [
+    ('app-192.png', SVG, 192), ('app-512.png', SVG, 512),
+    ('app-maskable-192.png', SQUARE, 192), ('app-maskable-512.png', SQUARE, 512),
+]
+if (ICONS / 'apple-touch-icon.png').exists():
+    JOBS.append(('apple-touch-icon.png', SQUARE, 180))
 
 
-OUT.mkdir(exist_ok=True)
-for size in (192, 512):
-    draw(size, False).save(OUT / f"app-{size}.png", optimize=True)
-    draw(size, True).save(OUT / f"app-maskable-{size}.png", optimize=True)
-print("icons/ 에 저장했어요")
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch()
+        pg = await b.new_page()
+        for name, svg, size in JOBS:
+            await pg.set_viewport_size({'width': size, 'height': size})
+            await pg.set_content(f'<style>html,body{{margin:0;background:transparent}}svg{{display:block;width:{size}px;height:{size}px}}</style>{svg}')
+            await pg.screenshot(path=str(ICONS / name), omit_background=name != 'apple-touch-icon.png')
+            print(name)
+        await b.close()
+
+asyncio.run(main())
